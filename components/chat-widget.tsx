@@ -351,65 +351,32 @@ export function ChatWidget({ isAuthenticated, onAuthRequired, onLogout }: ChatWi
     <>
       {/* 增强立体效果的悬浮聊天按钮 - 更明亮的颜色 */}
       {!isOpen && (
-        <div className="fixed bottom-8 right-8 z-[9999]" style={{ pointerEvents: "auto" }}>
-          <Button
-            onClick={handleChatOpen}
-            className="h-16 w-16 rounded-full relative overflow-hidden transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border-0"
-            style={{
-              background: "linear-gradient(135deg, #4ade80 0%, #34d399 40%, #10b981 70%, #059669 100%)",
-              boxShadow: `
-                0 8px 20px -5px rgba(34,197,94,0.4),
-                0 4px 12px -2px rgba(0,0,0,0.15),
-                inset 0 1px 0 rgba(255,255,255,0.5),
-                inset 0 -1px 0 rgba(0,0,0,0.1),
-                0 0 0 1px rgba(255,255,255,0.2)
-              `,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = `
-                0 12px 30px -5px rgba(34,197,94,0.5),
-                0 6px 16px -2px rgba(0,0,0,0.2),
-                inset 0 1px 0 rgba(255,255,255,0.6),
-                inset 0 -1px 0 rgba(0,0,0,0.15),
-                0 0 0 1px rgba(255,255,255,0.3)
-              `
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = `
-                0 8px 20px -5px rgba(34,197,94,0.4),
-                0 4px 12px -2px rgba(0,0,0,0.15),
-                inset 0 1px 0 rgba(255,255,255,0.5),
-                inset 0 -1px 0 rgba(0,0,0,0.1),
-                0 0 0 1px rgba(255,255,255,0.2)
-              `
-            }}
-            size="icon"
-          >
-            {/* 多层光泽效果 - 增强亮部 */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/60 via-white/20 to-transparent"></div>
-            <div className="absolute inset-1 rounded-full bg-gradient-to-br from-white/30 via-transparent to-black/5"></div>
-            <div className="absolute top-1 left-1 w-8 h-8 rounded-full bg-white/40 blur-sm"></div>
-            <div className="absolute bottom-2 right-2 w-4 h-4 rounded-full bg-white/20 blur-sm"></div>
-
-            {/* 图标内容 */}
-            <ArtisticN className="relative z-10" />
-          </Button>
-
-          {/* 增强的脉冲动画环 - 更明亮的颜色 */}
-          <div
-            className="absolute inset-0 rounded-full animate-[ping_3s_ease-in-out_infinite]"
-            style={{
-              pointerEvents: "none",
-              background: "radial-gradient(circle, rgba(74,222,128,0.4) 0%, rgba(52,211,153,0.2) 50%, transparent 70%)",
-            }}
-          ></div>
-          <div
-            className="absolute inset-2 rounded-full animate-[pulse_4s_ease-in-out_infinite]"
-            style={{
-              pointerEvents: "none",
-              background: "radial-gradient(circle, rgba(74,222,128,0.3) 0%, rgba(52,211,153,0.1) 60%, transparent 80%)",
-            }}
-          ></div>
+        <div
+          className="fixed bottom-8 right-8 z-[9999] cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 hover:-translate-y-1"
+          style={{ pointerEvents: "auto" }}
+          onClick={handleChatOpen}
+          role="button"
+          tabIndex={0}
+          aria-label="Open chat"
+        >
+          <div className="relative w-[48px] h-[48px] flex items-center justify-center">
+            <span style={{ fontSize: "48px" }} className="z-10">🌲</span> {/*确保 emoji 在脉冲动画之上*/}
+            {/* 增强的脉冲动画环 */}
+            <div
+              className="absolute inset-0 rounded-full animate-[ping_3s_ease-in-out_infinite]"
+              style={{
+                pointerEvents: "none",
+                background: "radial-gradient(circle, rgba(74,222,128,0.4) 0%, rgba(52,211,153,0.2) 50%, transparent 70%)",
+              }}
+            ></div>
+            <div
+              className="absolute inset-2 rounded-full animate-[pulse_4s_ease-in-out_infinite]"
+              style={{
+                pointerEvents: "none",
+                background: "radial-gradient(circle, rgba(74,222,128,0.3) 0%, rgba(52,211,153,0.1) 60%, transparent 80%)",
+              }}
+            ></div>
+          </div>
         </div>
       )}
 
@@ -535,14 +502,15 @@ export function ChatWidget({ isAuthenticated, onAuthRequired, onLogout }: ChatWi
                               ),
 
                               // 代码处理
-                              code: ({ node, inline, className, children, ...props }) => {
-                                const match = /language-(\w+)/.exec(className || "")
-                                const codeContent = String(children).replace(/\n$/, "")
+                              // @ts-ignore TODO: Investigate ReactMarkdown type issue with 'inline' prop
+                              code: ({ node, inline, className, children, ...restProps }) => {
+                                const match = /language-(\w+)/.exec(className || "");
+                                const codeContent = String(children).replace(/\n$/, "");
 
                                 return !inline && match ? (
                                   <CodeBlock
                                     language={match[1]}
-                                    isUserMessage={message.isUser}
+                                    isUserMessage={message.isUser} // 恢复对外部 message 的正确引用
                                     onCopy={copyToClipboard}
                                   >
                                     {codeContent}
@@ -550,10 +518,10 @@ export function ChatWidget({ isAuthenticated, onAuthRequired, onLogout }: ChatWi
                                 ) : (
                                   <code
                                     className={`px-1.5 py-0.5 rounded text-xs font-mono ${
-                                      message.isUser ? "bg-white/20 text-white" : "bg-gray-200 text-gray-800"
+                                      message.isUser ? "bg-white/20 text-white" : "bg-gray-200 text-gray-800" // 恢复对外部 message 的正确引用
                                     }`}
                                     style={{ wordBreak: "break-all" }}
-                                    {...props}
+                                    {...(restProps as any)} // 保留 as any 以尝试解决原始 TS 错误
                                   >
                                     {children}
                                   </code>
